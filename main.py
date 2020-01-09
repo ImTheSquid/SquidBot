@@ -258,7 +258,7 @@ class Client(discord.Client):
             else:
                 combined = ' '.join(segment)
                 quotes = [combined.split('"')[index] for index in [1, 3]]
-                self.loader.add_response(quotes[0][0:len(quotes[0])], quotes[1][0:len(quotes[0])])
+                self.loader.add_response(quotes[0][0:len(quotes[0])], quotes[1][0:len(quotes[1])])
         elif 'remove-response' in command and 'Bot Manager' in roleNames:
             if not len(command.split(' ')) >= 2:
                 await message.channel.send(':x: Incorrect number of arguments.')
