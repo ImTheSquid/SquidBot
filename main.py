@@ -154,9 +154,11 @@ class Client(discord.Client):
             embed.add_field(name='add-filter <filter-item>', value='* Adds a term to be filtered.', inline=False)
             embed.add_field(name='remove-filter <filter-item>', value='* Removes a term from the filter list.',
                             inline=False)
-            embed.add_field(name='lock-responses <boolean>', value='* Locks responses (except for custom responses '
+            embed.add_field(name='lock-responses [boolean]', value='* Locks responses (except for custom responses '
                                                                    'and filter item removal) to selected '
-                                                                   'channel if any channel is set.', inline=False)
+                                                                   'channel if any channel is set. Leaving out a '
+                                                                   'boolean argument will print the current setting',
+                            inline=False)
             embed.add_field(name='custom-responses', value='* Prints custom responses.', inline=False)
             embed.add_field(name='add-response <key> <response>', value='* Adds a custom response.', inline=False)
             embed.add_field(name='remove-response <key>', value='* Removes a custom response.', inline=False)
