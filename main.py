@@ -125,7 +125,8 @@ class Client(discord.Client):
                     await message.delete()
                     return
         # Custom responses
-        if not message.author == self.user and 'remove-response' not in command:
+        if not message.author == self.user and 'remove-response' not in command and \
+                not self.loader.get_lock_channel_responses():
             message_split = message.content.split(' ')
             for key in self.loader.get_custom_responses():
                 if key in message_split:
@@ -154,8 +155,7 @@ class Client(discord.Client):
             embed.add_field(name='add-filter <filter-item>', value='* Adds a term to be filtered.', inline=False)
             embed.add_field(name='remove-filter <filter-item>', value='* Removes a term from the filter list.',
                             inline=False)
-            embed.add_field(name='lock-responses [boolean]', value='* Locks responses (except for custom responses '
-                                                                   'and filter item removal) to selected '
+            embed.add_field(name='lock-responses [boolean]', value='* Locks custom responses to selected '
                                                                    'channel if any channel is set. Leaving out a '
                                                                    'boolean argument will print the current setting.',
                             inline=False)
