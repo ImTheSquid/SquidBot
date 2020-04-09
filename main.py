@@ -96,6 +96,7 @@ class JSONLoader:
 class Client(discord.Client):
     loader = None
     prefix = 'sb!'
+    login_complete = False
 
     async def on_ready(self):
         if self.loader is None:
@@ -105,21 +106,24 @@ class Client(discord.Client):
         if len(self.loader.get_prefix()) > 0:
             self.prefix = self.loader.get_prefix()
         print('Logged on as {0}! Using prefix:"{1}"'.format(self.user, self.prefix))
+        if self.login_complete:
+            return
+        self.login_complete = True
         if len(self.loader.get_channel()) > 0:
-            channelNames = [n.name for n in self.get_all_channels()]
-            if self.loader.get_channel() not in channelNames:
+            channel_names = [n.name for n in self.get_all_channels()]
+            if self.loader.get_channel() not in channel_names:
                 return
             else:
                 channels = [c for c in self.get_all_channels()]
-                await channels[channelNames.index(self.loader.get_channel())].send(':white_check_mark: '
-                                                                                   'Initialization '
-                                                                                   'successful.')
+                await channels[channel_names.index(self.loader.get_channel())].send(':white_check_mark: '
+                                                                                    'Initialization '
+                                                                                    'successful.')
 
     async def on_message(self, message):
-        roleNames = [n.name for n in message.author.roles]
+        role_names = [n.name for n in message.author.roles]
         command = message.content[len(self.prefix):]
         # Message filter
-        if not message.author == self.user and 'Bot Manager' not in roleNames:
+        if not message.author == self.user and 'Bot Manager' not in role_names:
             for remove in self.loader.get_removal_filter():
                 if remove in message.content:
                     await message.delete()
@@ -170,7 +174,7 @@ class Client(discord.Client):
                 await message.channel.send(self.loader.get_motm())
             else:
                 await message.channel.send(':x: MOTM not set.')
-        elif 'set-channel' in command and 'Bot Manager' in roleNames:
+        elif 'set-channel' in command and 'Bot Manager' in role_names:
             if not len(command.split(' ')) == 2:
                 await message.channel.send(':x: Incorrect number of arguments.')
                 return
@@ -181,20 +185,20 @@ class Client(discord.Client):
                 await message.channel.send(':white_check_mark: Set to accept all channels.')
                 self.loader.set_channel('')
                 return
-            channelNames = [n.name for n in self.get_all_channels()]
-            if channel not in channelNames:
+            channel_names = [n.name for n in self.get_all_channels()]
+            if channel not in channel_names:
                 await message.channel.send(':x: Invalid channel.')
             else:
                 await message.channel.send(':white_check_mark: Channel set to #{0}.'.format(channel))
                 self.loader.set_channel(channel)
-        elif 'set-prefix' in command and 'Bot Manager' in roleNames:
+        elif 'set-prefix' in command and 'Bot Manager' in role_names:
             if not len(command.split(' ')) == 2:
                 await message.channel.send(':x: Incorrect number of arguments.')
                 return
 
             self.loader.set_prefix(command.split(' ')[1])
             await message.channel.send('Prefix set to "{0}"'.format(self.loader.get_prefix()))
-        elif command == 'get-removal-filter' and 'Bot Manager' in roleNames:
+        elif command == 'get-removal-filter' and 'Bot Manager' in role_names:
             if len(self.loader.get_removal_filter()) == 0:
                 await message.channel.send(':x: Nothing on removal filter.')
             else:
@@ -202,7 +206,7 @@ class Client(discord.Client):
                 for item in self.loader.get_removal_filter():
                     out_str += '<' + item + '>\n'
                 await message.channel.send(':no_entry: Removal list:\n```{0}```'.format(out_str))
-        elif 'add-filter' in command and 'Bot Manager' in roleNames:
+        elif 'add-filter' in command and 'Bot Manager' in role_names:
             if not len(command.split(' ')) >= 2:
                 await message.channel.send(':x: Incorrect number of arguments.')
                 return
@@ -213,7 +217,7 @@ class Client(discord.Client):
                 await message.channel.send(':white_check_mark: Filter added.')
             else:
                 await message.channel.send(':x: Filter already exists.')
-        elif 'remove-filter' in command and 'Bot Manager' in roleNames:
+        elif 'remove-filter' in command and 'Bot Manager' in role_names:
             if not len(command.split(' ')) >= 2:
                 await message.channel.send(':x: Incorrect number of arguments.')
                 return
@@ -224,7 +228,7 @@ class Client(discord.Client):
                 await message.channel.send(':white_check_mark: Filter removed.')
             else:
                 await message.channel.send(':x: Filter does not exist.')
-        elif 'lock-responses' in command and 'Bot Manager' in roleNames:
+        elif 'lock-responses' in command and 'Bot Manager' in role_names:
             if not len(command.split(' ')) == 2:
                 await message.channel.send(':question: `lock-responses` set to `{0}`.'.format(
                     str(self.loader.get_lock_channel_responses())))
@@ -234,11 +238,11 @@ class Client(discord.Client):
             self.loader.set_lock_channel(lock.lower() == 'true')
             await message.channel.send(':white_check_mark: Set `lock-responses` to `{0}`.'.format(
                 str(self.loader.get_lock_channel_responses())))
-        elif command == 'exit' and 'Bot Manager' in roleNames:
+        elif command == 'exit' and 'Bot Manager' in role_names:
             await message.channel.send(':stop_button: Exiting...')
             await self.logout()
             sys.exit(0)
-        elif command == 'custom-responses' and 'Bot Manager' in roleNames:
+        elif command == 'custom-responses' and 'Bot Manager' in role_names:
             if len(self.loader.get_custom_responses()) == 0:
                 await message.channel.send(':x: No custom responses set.')
             else:
@@ -246,7 +250,7 @@ class Client(discord.Client):
                 for key in self.loader.get_custom_responses():
                     out_str += '"' + key + '" -> "' + self.loader.get_custom_responses()[key] + '"\n'
                 await message.channel.send(':loudspeaker: Custom responses:\n```{0}```'.format(out_str))
-        elif 'add-response' in command and 'Bot Manager' in roleNames:
+        elif 'add-response' in command and 'Bot Manager' in role_names:
             if not len(command.split(' ')) >= 3:
                 await message.channel.send(':x: Incorrect number of arguments.')
                 return
@@ -259,7 +263,7 @@ class Client(discord.Client):
                 combined = ' '.join(segment)
                 quotes = [combined.split('"')[index] for index in [1, 3]]
                 self.loader.add_response(quotes[0][0:len(quotes[0])], quotes[1][0:len(quotes[1])])
-        elif 'remove-response' in command and 'Bot Manager' in roleNames:
+        elif 'remove-response' in command and 'Bot Manager' in role_names:
             if not len(command.split(' ')) >= 2:
                 await message.channel.send(':x: Incorrect number of arguments.')
                 return
@@ -270,7 +274,7 @@ class Client(discord.Client):
                 await message.channel.send(':white_check_mark: Response removed.')
             else:
                 await message.channel.send(':x: Response does not exist.')
-        elif 'smotm' in command and 'Bot Manager' in roleNames:
+        elif 'smotm' in command and 'Bot Manager' in role_names:
             if not len(command.split(' ')) >= 2:
                 await message.channel.send(':x: Incorrect number of arguments.')
                 return
