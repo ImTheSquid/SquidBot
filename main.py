@@ -1,5 +1,6 @@
 import getopt
 import json
+import re
 import sys
 from os import path
 
@@ -125,17 +126,15 @@ class Client(discord.Client):
         # Message filter
         if not message.author == self.user and 'Bot Manager' not in role_names:
             for remove in self.loader.get_removal_filter():
-                if remove in message.content:
+                if re.search(remove, message.content, re.IGNORECASE):
                     await message.delete()
                     return
         # Custom responses
-        if not message.author == self.user and 'remove-response' not in command and \
+        if message.author != self.user and 'remove-response' not in command and \
                 not self.loader.get_lock_channel_responses():
-            message_split = message.content.split(' ')
             for key in self.loader.get_custom_responses():
-                if key in message_split:
+                if re.search(key, message.content, re.IGNORECASE):
                     await message.channel.send(self.loader.get_custom_responses()[key])
-                    break
         # Return if no prefix or not in correct channel
         if not message.content.startswith(self.prefix) or (len(self.loader.get_channel()) > 0
                                                            and not message.channel.name == self.loader.get_channel()):
@@ -156,7 +155,8 @@ class Client(discord.Client):
                             inline=False)
             embed.add_field(name='get-removal-filter', value='* Prints terms that are set to be automatically deleted.',
                             inline=False)
-            embed.add_field(name='add-filter <filter-item>', value='* Adds a term to be filtered.', inline=False)
+            embed.add_field(name='add-filter <filter-item>', value='* Adds a term to be filtered. Supports regex.',
+                            inline=False)
             embed.add_field(name='remove-filter <filter-item>', value='* Removes a term from the filter list.',
                             inline=False)
             embed.add_field(name='lock-responses [boolean]', value='* Locks custom responses to selected '
@@ -164,7 +164,8 @@ class Client(discord.Client):
                                                                    'boolean argument will print the current setting.',
                             inline=False)
             embed.add_field(name='custom-responses', value='* Prints custom responses.', inline=False)
-            embed.add_field(name='add-response <key> <response>', value='* Adds a custom response.', inline=False)
+            embed.add_field(name='add-response <key> <response>', value='* Adds a custom response. Supports regex.',
+                            inline=False)
             embed.add_field(name='remove-response <key>', value='* Removes a custom response.', inline=False)
             embed.add_field(name="exit", value="* Exits bot.", inline=False)
             embed.add_field(name="help", value="Prints help document.", inline=False)
